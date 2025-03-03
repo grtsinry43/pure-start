@@ -1,10 +1,16 @@
 import {configureStore} from '@reduxjs/toolkit'
-import appearanceSettingsReducer from '@/store/appearance-settings'
+import appearanceSettingsReducer from '@/store/appearance-settings';
+import backgroundSettingsReducer from '@/store/background-settings';
+import layoutSettingsReducer from '@/store/layout-settings';
+import clockSettingsReducer from '@/store/clock-settings';
 
 export const makeStore = () => {
     return configureStore({
         reducer: {
             appearance: appearanceSettingsReducer,
+            background: backgroundSettingsReducer,
+            layout: layoutSettingsReducer,
+            clock: clockSettingsReducer,
         }
     })
 }

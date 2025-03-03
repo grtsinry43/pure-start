@@ -2,7 +2,6 @@
 
 import {useState} from "react"
 import {
-    X,
     Layout,
     Palette,
     Grid,
@@ -42,6 +41,7 @@ const SettingsDialog = () => {
     const [isOpen, setIsOpen] = useState(false)
 
     const appearance = useAppSelector(state => state.appearance)
+    const clock = useAppSelector(state => state.clock)
 
     const dispatch = useAppDispatch();
 
@@ -83,7 +83,7 @@ const SettingsDialog = () => {
                 </DialogHeader>
 
                 <div className={`${isDarkMode ? "dark" : ""}`}>
-                    <div className="flex flex-col bg-background/20 text-foreground">
+                    <div className="flex flex-col bg-background/10 text-foreground">
                         <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] gap-0">
                             {/* 侧边栏导航 */}
                             <aside className="hidden md:block border-r">
@@ -132,7 +132,7 @@ const SettingsDialog = () => {
                                                 </div>
 
                                                 <div className="grid gap-6">
-                                                    <Card className="border rounded-lg shadow-sm">
+                                                    <Card className="border rounded-lg shadow-sm bg-background/50">
                                                         <CardContent className="p-6">
                                                             <div className="space-y-6">
                                                                 <div className="space-y-3">
@@ -164,7 +164,13 @@ const SettingsDialog = () => {
                                                                         <Switch
                                                                             id="theme-mode"
                                                                             checked={isDarkMode}
-                                                                            onCheckedChange={toggleTheme}
+                                                                            onCheckedChange={() => {
+                                                                                toggleTheme()
+                                                                                dispatch({
+                                                                                    type: 'appearanceSettings/changeDarkMode',
+                                                                                    payload: !isDarkMode
+                                                                                })
+                                                                            }}
                                                                             disabled={appearance.isDarkModeFollowSystem}
                                                                         />
                                                                     </div>
@@ -265,7 +271,7 @@ const SettingsDialog = () => {
                                                 </div>
 
                                                 <div className="grid gap-6">
-                                                    <Card className="border rounded-lg shadow-sm">
+                                                    <Card className="border rounded-lg shadow-sm bg-background/50">
                                                         <CardContent className="p-6">
                                                             <div className="space-y-6">
                                                                 <div className="space-y-3">
@@ -333,7 +339,7 @@ const SettingsDialog = () => {
                                                 </div>
 
                                                 <div className="grid gap-6">
-                                                    <Card className="border rounded-lg shadow-sm">
+                                                    <Card className="border rounded-lg shadow-sm bg-background/50">
                                                         <CardContent className="p-6">
                                                             <div className="space-y-6">
                                                                 <div className="space-y-3">
@@ -424,20 +430,35 @@ const SettingsDialog = () => {
                                                 </div>
 
                                                 <div className="grid gap-6">
-                                                    <Card className="border rounded-lg shadow-sm">
+                                                    <Card className="border rounded-lg shadow-sm  bg-background/50">
                                                         <CardContent className="p-6">
                                                             <div className="space-y-6">
                                                                 <div className="space-y-3">
                                                                     <div className="flex items-center justify-between">
                                                                         <Label htmlFor="show-clock"
                                                                                className="font-medium"> 显示时钟 </Label>
-                                                                        <Switch id="show-clock" defaultChecked/>
+                                                                        <Switch id="show-clock"
+                                                                                checked={clock.isClockShow}
+                                                                                onCheckedChange={(checked) => {
+                                                                                    dispatch({
+                                                                                        type: 'clockSettings/changeClockShow',
+                                                                                        payload: checked
+                                                                                    })
+                                                                                }}
+                                                                        />
                                                                     </div>
                                                                 </div>
 
                                                                 <div className="space-y-3">
                                                                     <Label className="font-medium"> 时钟格式 </Label>
                                                                     <RadioGroup defaultValue="24h"
+                                                                                value={clock.clockFormat}
+                                                                                onValueChange={(format) => {
+                                                                                    dispatch({
+                                                                                        type: 'clockSettings/changeClockFormat',
+                                                                                        payload: format
+                                                                                    })
+                                                                                }}
                                                                                 className="grid gap-3">
                                                                         <div
                                                                             className="flex items-center space-x-2 rounded-md border p-3 cursor-pointer hover:bg-accent">
@@ -460,7 +481,14 @@ const SettingsDialog = () => {
                                                                     <div className="flex items-center justify-between">
                                                                         <Label htmlFor="show-seconds"
                                                                                className="font-medium"> 显示秒数 </Label>
-                                                                        <Switch id="show-seconds"/>
+                                                                        <Switch id="show-seconds"
+                                                                                checked={clock.isSecondShow}
+                                                                                onCheckedChange={(checked) => {
+                                                                                    dispatch({
+                                                                                        type: 'clockSettings/changeSecondShow',
+                                                                                        payload: checked
+                                                                                    })
+                                                                                }}/>
                                                                     </div>
                                                                 </div>
 
@@ -484,7 +512,7 @@ const SettingsDialog = () => {
                                                 </div>
 
                                                 <div className="grid gap-6">
-                                                    <Card className="border rounded-lg shadow-sm">
+                                                    <Card className="border rounded-lg shadow-sm  bg-background/50">
                                                         <CardContent className="p-6">
                                                             <div className="space-y-6">
                                                                 <div className="space-y-3">
@@ -547,7 +575,7 @@ const SettingsDialog = () => {
                                                 </div>
 
                                                 <div className="grid gap-6">
-                                                    <Card className="border rounded-lg shadow-sm">
+                                                    <Card className="border rounded-lg shadow-sm bg-background/50">
                                                         <CardContent className="p-6">
                                                             <div className="space-y-6">
                                                                 <div className="space-y-3">
@@ -608,7 +636,7 @@ const SettingsDialog = () => {
                                                 </div>
 
                                                 <div className="grid gap-6">
-                                                    <Card className="border rounded-lg shadow-sm">
+                                                    <Card className="border rounded-lg shadow-sm bg-background/50">
                                                         <CardContent className="p-6">
                                                             <div className="space-y-6">
                                                                 <div className="space-y-3">
@@ -665,7 +693,7 @@ const SettingsDialog = () => {
                                                 </div>
 
                                                 <div className="grid gap-6">
-                                                    <Card className="border rounded-lg shadow-sm">
+                                                    <Card className="border rounded-lg shadow-sm bg-background/50">
                                                         <CardContent className="p-6">
                                                             <div className="space-y-6">
                                                                 <div className="space-y-3">
