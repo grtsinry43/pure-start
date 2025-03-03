@@ -1,6 +1,6 @@
 "use client"
 
-import React, {useState, useEffect} from "react"
+import React, {useState, useEffect, useCallback} from "react"
 import {motion, AnimatePresence} from "framer-motion"
 import {Search, Github, Twitter, Mail, Sun, Moon, Cloud, Coffee, Bookmark, Music, Settings} from 'lucide-react'
 import {Input} from "@/components/ui/input"
@@ -8,6 +8,7 @@ import {Tabs, TabsList, TabsTrigger} from "@/components/ui/tabs"
 import {cn} from "@/lib/utils"
 import SettingsDialog from "@/components/settings/SettingsDialog"
 import {useAppSelector} from "@/hooks/redux";
+import debounce from "lodash.debounce";
 
 export default function ElegantStartPage() {
     const [time, setTime] = useState(new Date())
@@ -16,8 +17,23 @@ export default function ElegantStartPage() {
     const [isDarkMode, setIsDarkMode] = useState(false)
     const [activeTab, setActiveTab] = useState("all")
 
+    const handleSearchChange = useCallback(
+        debounce(async (value) => {
+            // Fetch search suggestions here
+            const res = await fetch(search.searchEngineList.find(engine => engine.name === search.defaultSearchEngine)?.suggestUrl + value);
+            console.log("Fetching suggestions for:", res);
+        }, 300),
+        []
+    );
+
+    const handleChange = (e) => {
+        setSearchValue(e.target.value);
+        handleSearchChange(e.target.value);
+    };
+
     const appearance = useAppSelector(state => state.appearance)
     const clock = useAppSelector(state => state.clock)
+    const search = useAppSelector(state => state.search)
 
     useEffect(() => {
         document.addEventListener("keydown", (e) => {
@@ -66,7 +82,14 @@ export default function ElegantStartPage() {
     const handleSearch = (e) => {
         e.preventDefault()
         if (searchValue.trim()) {
-            window.open(`https://www.google.com/search?q=${encodeURIComponent(searchValue)}`, "_blank")
+            // 使用当前选择的搜索引擎
+            const searchEngine = search.searchEngineList.find(engine => engine.name === search.defaultSearchEngine)
+            if (searchEngine) {
+                window.open(`${searchEngine.url}${encodeURIComponent(searchValue)}`, "_blank")
+            } else {
+                // fallback to Google search
+                window.open(`https://www.google.com/search?q=${encodeURIComponent(searchValue)}`, "_blank")
+            }
         }
     }
 
@@ -132,18 +155,18 @@ export default function ElegantStartPage() {
                 transition={{duration: 1}}
                 className="w-full max-w-3xl space-y-12 z-10"
             >
-                {/* Dark mode toggle */}
-                <motion.button
-                    className="absolute top-6 right-6 p-2 rounded-full bg-background/20 backdrop-blur-lg border border-white/10 text-white"
-                    whileHover={{scale: 1.05}}
-                    whileTap={{scale: 0.95}}
-                    onClick={toggleDarkMode}
-                >
-                    {isDarkMode ? <Sun className="w-5 h-5"/> : <Moon className="w-5 h-5"/>}
-                </motion.button>
+                {/*/!* Dark mode toggle *!/*/}
+                {/*<motion.button*/}
+                {/*    className="absolute top-6 right-6 p-2 rounded-full bg-background/20 backdrop-blur-lg border border-white/10 text-white"*/}
+                {/*    whileHover={{scale: 1.05}}*/}
+                {/*    whileTap={{scale: 0.95}}*/}
+                {/*    onClick={toggleDarkMode}*/}
+                {/*>*/}
+                {/*    {isDarkMode ? <Sun className="w-5 h-5"/> : <Moon className="w-5 h-5"/>}*/}
+                {/*</motion.button>*/}
 
                 {/* Settings button */}
-                <div className="absolute top-6 right-20">
+                <div className="absolute top-6 right-6">
                     <SettingsDialog/>
                 </div>
 
@@ -200,7 +223,7 @@ export default function ElegantStartPage() {
                     <Input
                         type="text"
                         value={searchValue}
-                        onChange={(e) => setSearchValue(e.target.value)}
+                        onChange={handleChange}
                         placeholder="探索未知..."
                         className="w-full pl-14 pr-4 py-6 rounded-xl bg-background/20 backdrop-blur-xl border-white/10 text-white placeholder:text-white/50 focus:border-white/30 focus:ring-1 focus:ring-white/30 transition-all duration-200"
                         onFocus={() => setSearchFocused(true)}
@@ -213,13 +236,15 @@ export default function ElegantStartPage() {
                         initial={{opacity: 0}}
                         animate={{opacity: searchFocused ? 1 : 0}}
                     >
-                        Press <kbd>Enter</kbd> to search
+                        按下 <kbd>Enter</kbd> 来搜索, 当前使用 {search.defaultSearchEngine}
                     </motion.div>
                 </motion.form>
 
                 {/* Quick links section */}
                 <div className={
-                    cn(searchFocused ? "opacity-70 blur-sm" : "opacity-100", "transition duration-200 ease-in-out")
+                    cn(searchFocused ? "opacity-70 blur-sm" : "opacity-100", "transition duration-200 ease-in-out",
+                        "pt-8"
+                    )
                 }>
                     <motion.div
                         className="mt-16 space-y-6"

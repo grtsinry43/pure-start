@@ -3,6 +3,7 @@ import appearanceSettingsReducer from '@/store/appearance-settings';
 import backgroundSettingsReducer from '@/store/background-settings';
 import layoutSettingsReducer from '@/store/layout-settings';
 import clockSettingsReducer from '@/store/clock-settings';
+import searchSettingsReducer from '@/store/search-settings';
 
 export const makeStore = () => {
     return configureStore({
@@ -11,6 +12,7 @@ export const makeStore = () => {
             background: backgroundSettingsReducer,
             layout: layoutSettingsReducer,
             clock: clockSettingsReducer,
+            search: searchSettingsReducer,
         }
     })
 }

@@ -34,6 +34,7 @@ import {
 import {ScrollArea} from "@/components/ui/scroll-area"
 import {cn} from "@/lib/utils"
 import {useAppDispatch, useAppSelector} from "@/hooks/redux";
+import {SearchSettings} from "@/store/search-settings";
 
 const SettingsDialog = () => {
     const [isDarkMode, setIsDarkMode] = useState(false)
@@ -42,6 +43,7 @@ const SettingsDialog = () => {
 
     const appearance = useAppSelector(state => state.appearance)
     const clock = useAppSelector(state => state.clock)
+    const search = useAppSelector(state => state.search)
 
     const dispatch = useAppDispatch();
 
@@ -114,13 +116,14 @@ const SettingsDialog = () => {
                                 <Tabs
                                     value={activeTab}
                                     onValueChange={setActiveTab}
-                                    className="w-full"
+                                    className="w-full overflow-x-auto"
                                 >
-                                    <TabsList className="grid grid-cols-4 md:hidden p-1 mx-4 mt-2">
-                                        <TabsTrigger value="appearance"> 外观 </TabsTrigger>
-                                        <TabsTrigger value="layout"> 布局 </TabsTrigger>
-                                        <TabsTrigger value="background"> 背景 </TabsTrigger>
-                                        <TabsTrigger value="widgets"> 小组件 </TabsTrigger>
+                                    <TabsList className="flex p-1 mx-4 md:hidden mt-2 justify-around items-center">
+                                        {navigationItems.map((item) => (
+                                            <TabsTrigger key={item.value} value={item.value} className="flex-shrink-0">
+                                                {item.label}
+                                            </TabsTrigger>
+                                        ))}
                                     </TabsList>
 
                                     <ScrollArea className="h-[60vh]">
@@ -582,25 +585,42 @@ const SettingsDialog = () => {
                                                                     <div className="flex items-center justify-between">
                                                                         <Label htmlFor="show-search"
                                                                                className="font-medium"> 显示搜索栏 </Label>
-                                                                        <Switch id="show-search" defaultChecked/>
+                                                                        <Switch id="show-search"
+                                                                                checked={search.isSearchBarShow}
+                                                                                onCheckedChange={(checked) => {
+                                                                                    dispatch({
+                                                                                        type: 'searchSettings/changeSearchBarShow',
+                                                                                        payload: checked
+                                                                                    })
+                                                                                }}
+                                                                        />
                                                                     </div>
                                                                 </div>
 
                                                                 <div className="space-y-3">
                                                                     <Label htmlFor="search-engine"
                                                                            className="font-medium"> 默认搜索引擎 </Label>
-                                                                    <Select defaultValue="baidu">
+                                                                    <Select value={search.defaultSearchEngine}
+                                                                            onValueChange={(select) => {
+                                                                                dispatch({
+                                                                                    type: 'searchSettings/changeDefaultSearchEngine',
+                                                                                    payload: select
+                                                                                })
+                                                                            }}
+                                                                    >
                                                                         <SelectTrigger className="w-full">
                                                                             <SelectValue placeholder="选择搜索引擎"/>
                                                                         </SelectTrigger>
                                                                         <SelectContent>
-                                                                            <SelectItem
-                                                                                value="baidu"> 百度 </SelectItem>
-                                                                            <SelectItem
-                                                                                value="google">Google</SelectItem>
-                                                                            <SelectItem value="bing">Bing</SelectItem>
-                                                                            <SelectItem
-                                                                                value="sogou"> 搜狗 </SelectItem>
+                                                                            {
+                                                                                search.searchEngineList.map((engine) => (
+                                                                                    <SelectItem
+                                                                                        key={engine.url}
+                                                                                        value={engine.name}>
+                                                                                        {engine.name}
+                                                                                    </SelectItem>
+                                                                                ))
+                                                                            }
                                                                         </SelectContent>
                                                                     </Select>
                                                                 </div>
@@ -609,7 +629,15 @@ const SettingsDialog = () => {
                                                                     <div className="flex items-center justify-between">
                                                                         <Label htmlFor="search-suggestions"
                                                                                className="font-medium"> 搜索建议 </Label>
-                                                                        <Switch id="search-suggestions" defaultChecked/>
+                                                                        <Switch id="search-suggestions"
+                                                                                checked={search.isSuggestionsShow}
+                                                                                onCheckedChange={(checked) => {
+                                                                                    dispatch({
+                                                                                        type: 'searchSettings/changeSuggestionsShow',
+                                                                                        payload: checked
+                                                                                    })
+                                                                                }}
+                                                                        />
                                                                     </div>
                                                                     <p className="text-sm text-muted-foreground">
                                                                         在输入时显示搜索建议
@@ -620,7 +648,15 @@ const SettingsDialog = () => {
                                                                     <div className="flex items-center justify-between">
                                                                         <Label htmlFor="search-history"
                                                                                className="font-medium"> 保存搜索历史 </Label>
-                                                                        <Switch id="search-history" defaultChecked/>
+                                                                        <Switch id="search-history"
+                                                                                checked={search.isSaveSearchHistory}
+                                                                                onCheckedChange={(checked) => {
+                                                                                    dispatch({
+                                                                                        type: 'searchSettings/changeIsSaveSearchHistory',
+                                                                                        payload: checked
+                                                                                    })
+                                                                                }}
+                                                                        />
                                                                     </div>
                                                                 </div>
                                                             </div>
