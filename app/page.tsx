@@ -75,11 +75,31 @@ export default function ElegantStartPage() {
         document.documentElement.classList.toggle("dark")
     }
 
-    const getGreeting = () => {
-        const hour = time.getHours()
-        if (hour < 12) return "早上好！今天又是新的开始！加油哦！"
-        if (hour < 18) return "下午好！记得休息一下！"
-        return "晚上好！今天过得怎么样？"
+    function getTimeGreeting(hour) {
+        // 核心时间问候逻辑（可扩展）
+        if (hour < 5) return "凌晨好！夜深了，注意休息~"
+        if (hour < 9) return "清晨好！新的一天从元气满满开始！"
+        if (hour < 12) return "上午好！保持专注，工作效率++！"
+        if (hour === 12) return "中午好！享用美味午餐吧！"
+        if (hour < 14) return "午后时光，适当小憩更精神哦"
+        if (hour < 17) return "下午好！喝杯茶保持战斗力 💪"
+        if (hour < 19) return "傍晚好！晚霞很美，记得看看窗外"
+        if (hour < 22) return "晚上好！今天有新的收获吗？"
+        return "夜深了，让眼睛好好休息吧"
+    }
+
+    const extraTips = {
+        10: "🕙 整点提示：起身活动一下吧",
+        15: "☕ 下午茶时间到！",
+        20: "📖 晚间阅读时间",
+        23: "🌙 请关闭强光准备入睡"
+    };
+
+    function getGreeting() {
+        const hour = time.getHours();
+        const base = getTimeGreeting(hour);
+        const tip = extraTips[hour] || "";
+        return [base, tip].filter(Boolean).join("\n");
     }
 
     const handleSearch = (e) => {

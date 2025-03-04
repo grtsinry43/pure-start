@@ -9,8 +9,20 @@ interface SuggestionsListProps {
     searchValue: string
 }
 
-interface BaiduSuggestion {
-    s: string[]
+interface BingSuggestion {
+    AS: {
+        Query: string;
+        FullResults: number;
+        Results: {
+            Type: string;
+            Suggests: {
+                Txt: string;
+                Type: string;
+                Sk: string;
+                HCS: number;
+            }[];
+        }[];
+    };
 }
 
 declare global {
@@ -53,52 +65,52 @@ export default function SuggestionsList({searchValue}: SuggestionsListProps) {
     useEffect(() => {
         const fetchSuggestions = debounce((searchValue: string) => {
             if (!searchValue.trim()) {
-                setSuggestions([])
-                return
+                setSuggestions([]);
+                return;
             }
 
-            const callbackName = `jsonpCallback_${Date.now()}`
+            const callbackName = `jsonpCallback_${Date.now()}`;
 
-
-            window[callbackName] = (data: BaiduSuggestion) => {
-                if (data && data.s) {
-                    setSuggestions(data.s.slice(0, 8))
+            window[callbackName] = (data: BingSuggestion) => {
+                if (data && data.AS && data.AS.Results) {
+                    const suggestions = data.AS.Results.flatMap(result => result.Suggests.map(suggest => suggest.Txt));
+                    setSuggestions(suggestions.slice(0, 8));
                 } else {
-                    setSuggestions([])
+                    setSuggestions([]);
                 }
 
                 if (script.parentNode) {
-                    document.body.removeChild(script)
+                    document.body.removeChild(script);
                 }
-                delete window[callbackName]
-            }
+                delete window[callbackName];
+            };
 
-            const script = document.createElement("script")
-            script.src = `https://suggestion.baidu.com/su?wd=${encodeURIComponent(searchValue)}&cb=${callbackName}`
+            const script = document.createElement("script");
+            script.src = `https://api.bing.com/qsonhs.aspx?type=cb&q=${encodeURIComponent(searchValue)}&cb=${callbackName}`;
             script.onerror = () => {
-                console.error("JSONP request failed")
+                console.error("JSONP request failed");
                 if (script.parentNode) {
-                    document.body.removeChild(script)
+                    document.body.removeChild(script);
                 }
-                delete window[callbackName]
-            }
+                delete window[callbackName];
+            };
 
-            document.body.appendChild(script)
+            document.body.appendChild(script);
 
             return () => {
                 if (script.parentNode) {
-                    document.body.removeChild(script)
+                    document.body.removeChild(script);
                 }
-                delete window[callbackName]
-            }
-        }, 300)
+                delete window[callbackName];
+            };
+        }, 300);
 
-        fetchSuggestions(searchValue)
+        fetchSuggestions(searchValue);
 
         return () => {
-            fetchSuggestions.cancel()
-        }
-    }, [searchValue])
+            fetchSuggestions.cancel();
+        };
+    }, [searchValue]);
 
     const saveToRecent = (term: string) => {
         try {
