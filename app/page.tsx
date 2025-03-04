@@ -1,14 +1,15 @@
 "use client"
 
-import React, {useState, useEffect, useCallback} from "react"
+import {useState, useEffect, useCallback, useRef} from "react"
 import {motion, AnimatePresence} from "framer-motion"
-import {Search, Github, Twitter, Mail, Sun, Moon, Cloud, Coffee, Bookmark, Music, Settings} from 'lucide-react'
+import {Search, Github, Twitter, Mail, Cloud, Coffee, Bookmark, Music} from "lucide-react"
 import {Input} from "@/components/ui/input"
 import {Tabs, TabsList, TabsTrigger} from "@/components/ui/tabs"
 import {cn} from "@/lib/utils"
 import SettingsDialog from "@/components/settings/SettingsDialog"
-import {useAppSelector} from "@/hooks/redux";
-import debounce from "lodash.debounce";
+import {useAppSelector} from "@/hooks/redux"
+import debounce from "lodash.debounce"
+import SuggestionsList from "@/components/search/SuggestionsList"
 
 export default function ElegantStartPage() {
     const [time, setTime] = useState(new Date())
@@ -16,24 +17,27 @@ export default function ElegantStartPage() {
     const [searchValue, setSearchValue] = useState("")
     const [isDarkMode, setIsDarkMode] = useState(false)
     const [activeTab, setActiveTab] = useState("all")
+    const searchBar = useRef(null);
+    const suggestionsRef = useRef(null);
 
-    const handleSearchChange = useCallback(
-        debounce(async (value) => {
-            // Fetch search suggestions here
-            const res = await fetch(search.searchEngineList.find(engine => engine.name === search.defaultSearchEngine)?.suggestUrl + value);
-            console.log("Fetching suggestions for:", res);
-        }, 300),
-        []
-    );
+    useEffect(() => {
+        function handleClickOutside(event) {
+            console.log(event)
+            if (suggestionsRef.current && !suggestionsRef.current.contains(event.target)) {
+                setSearchFocused(false);
+            }
+        }
 
-    const handleChange = (e) => {
-        setSearchValue(e.target.value);
-        handleSearchChange(e.target.value);
-    };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [suggestionsRef]);
 
-    const appearance = useAppSelector(state => state.appearance)
-    const clock = useAppSelector(state => state.clock)
-    const search = useAppSelector(state => state.search)
+    const appearance = useAppSelector((state) => state.appearance)
+    const clock = useAppSelector((state) => state.clock)
+    const search = useAppSelector((state) => state.search)
+    const background = useAppSelector((state) => state.background)
 
     useEffect(() => {
         document.addEventListener("keydown", (e) => {
@@ -64,7 +68,6 @@ export default function ElegantStartPage() {
             setIsDarkMode(appearance.isDarkMode)
             document.documentElement.classList.toggle("dark", appearance.isDarkMode)
         }
-
     }, [appearance.isDarkMode, appearance.isDarkModeFollowSystem])
 
     const toggleDarkMode = () => {
@@ -83,7 +86,7 @@ export default function ElegantStartPage() {
         e.preventDefault()
         if (searchValue.trim()) {
             // 使用当前选择的搜索引擎
-            const searchEngine = search.searchEngineList.find(engine => engine.name === search.defaultSearchEngine)
+            const searchEngine = search.searchEngineList.find((engine) => engine.name === search.defaultSearchEngine)
             if (searchEngine) {
                 window.open(`${searchEngine.url}${encodeURIComponent(searchValue)}`, "_blank")
             } else {
@@ -114,12 +117,14 @@ export default function ElegantStartPage() {
         >
             {/* Background with overlay */}
             <div className="fixed inset-0 z-[-1]">
-                <div className={cn(
-                    "absolute inset-0 bg-gradient-to-b",
-                    searchFocused ? "from-black/40 to-black/70" : "from-black/30 to-black/60"
-                )}/>
+                <div
+                    className={cn(
+                        "absolute inset-0 bg-gradient-to-b",
+                        searchFocused ? "from-black/40 to-black/70" : "from-black/30 to-black/60",
+                    )}
+                />
                 <img
-                    src="https://dogeoss.grtsinry43.com/volantis-static/media/wallpaper/minimalist/2020/006.webp"
+                    src={background.photo.url === '' ? "https://dogeoss.grtsinry43.com/volantis-static/media/wallpaper/minimalist/2020/006.webp" : background.photo.url}
                     alt="Background"
                     className="w-full h-full object-cover"
                 />
@@ -171,10 +176,13 @@ export default function ElegantStartPage() {
                 </div>
 
                 {/* Time and greeting section */}
-                <div className={cn("text-center space-y-4",
-                    searchFocused ? "opacity-70 blur-sm" : "opacity-100",
-                    "transition-opacity duration-200"
-                )}>
+                <div
+                    className={cn(
+                        "text-center space-y-4",
+                        searchFocused ? "opacity-70 blur-sm" : "opacity-100",
+                        "transition-opacity duration-200",
+                    )}
+                >
                     <motion.h2
                         className="text-lg font-medium text-white/80"
                         initial={{y: -20, opacity: 0}}
@@ -184,23 +192,21 @@ export default function ElegantStartPage() {
                         {getGreeting()}
                     </motion.h2>
 
-                    {
-                        clock.isClockShow && (
-                            <motion.h1
-                                className="text-7xl font-bold tracking-tight text-white"
-                                initial={{y: -20, opacity: 0}}
-                                animate={{y: 0, opacity: 1}}
-                                transition={{type: "spring", stiffness: 100, damping: 15}}
-                            >
-                                {time.toLocaleTimeString([], {
-                                    hour: "numeric",
-                                    minute: "2-digit",
-                                    hour12: clock.clockFormat === '12h',
-                                    second: clock.isSecondShow ? "2-digit" : undefined,
-                                })}
-                            </motion.h1>
-                        )
-                    }
+                    {clock.isClockShow && (
+                        <motion.h1
+                            className="text-7xl font-bold tracking-tight text-white"
+                            initial={{y: -20, opacity: 0}}
+                            animate={{y: 0, opacity: 1}}
+                            transition={{type: "spring", stiffness: 100, damping: 15}}
+                        >
+                            {time.toLocaleTimeString([], {
+                                hour: "numeric",
+                                minute: "2-digit",
+                                hour12: clock.clockFormat === "12h",
+                                second: clock.isSecondShow ? "2-digit" : undefined,
+                            })}
+                        </motion.h1>
+                    )}
 
                     <motion.p
                         className="text-sm text-white/70"
@@ -213,39 +219,53 @@ export default function ElegantStartPage() {
                 </div>
 
                 {/* Search bar */}
-                <motion.form
-                    className="relative mx-auto max-w-lg"
-                    initial={false}
-                    animate={searchFocused ? {scale: 1.02} : {scale: 1}}
-                    transition={{duration: 0.2}}
-                    onSubmit={handleSearch}
-                >
-                    <Input
-                        type="text"
-                        value={searchValue}
-                        onChange={handleChange}
-                        placeholder="探索未知..."
-                        className="w-full pl-14 pr-4 py-6 rounded-xl bg-background/20 backdrop-blur-xl border-white/10 text-white placeholder:text-white/50 focus:border-white/30 focus:ring-1 focus:ring-white/30 transition-all duration-200"
-                        onFocus={() => setSearchFocused(true)}
-                        onBlur={() => setSearchFocused(false)}
-                    />
-                    <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white/70 w-5 h-5"/>
-
-                    <motion.div
-                        className="absolute -bottom-8 left-0 right-0 text-center text-xs text-white/50"
-                        initial={{opacity: 0}}
-                        animate={{opacity: searchFocused ? 1 : 0}}
+                <div className="relative mx-auto max-w-lg" ref={searchBar}>
+                    <motion.form
+                        initial={false}
+                        animate={searchFocused ? {scale: 1.02} : {scale: 1}}
+                        transition={{duration: 0.2}}
+                        onSubmit={handleSearch}
                     >
-                        按下 <kbd>Enter</kbd> 来搜索, 当前使用 {search.defaultSearchEngine}
-                    </motion.div>
-                </motion.form>
+                        <motion.div
+                            className="absolute -top-6 left-0 right-0 text-center text-xs text-white/50"
+                            initial={{opacity: 0}}
+                            animate={{opacity: searchFocused ? 1 : 0}}
+                        >
+                            按下 <kbd>Enter</kbd> 或点击建议项目来搜索, 当前使用 {search.defaultSearchEngine}
+                        </motion.div>
+                        <Input
+                            type="text"
+                            value={searchValue}
+                            onChange={(e) => setSearchValue(e.target.value)}
+                            placeholder="探索未知..."
+                            className="w-full pl-14 pr-4 py-6 rounded-xl bg-background/20 backdrop-blur-xl border-white/10 text-white placeholder:text-white/50 focus:border-white/30 focus:ring-1 focus:ring-white/30 transition-all duration-200"
+                            onFocus={() => {
+                                setSearchFocused(true)
+                                // 移动设备移动到 #search-bar
+                                if (window.innerWidth < 640) {
+                                    searchBar.current.scrollIntoView({behavior: "smooth"});
+                                }
+                            }}
+                        />
+                        <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white/70 w-5 h-5"/>
+                    </motion.form>
+                    {
+                        searchFocused && (
+                            <div ref={suggestionsRef}>
+                                <SuggestionsList searchValue={searchValue}/>
+                            </div>
+                        )
+                    }
+                </div>
 
                 {/* Quick links section */}
-                <div className={
-                    cn(searchFocused ? "opacity-70 blur-sm" : "opacity-100", "transition duration-200 ease-in-out",
-                        "pt-8"
-                    )
-                }>
+                <div
+                    className={cn(
+                        searchFocused ? "opacity-70 blur-sm" : "opacity-100",
+                        "transition duration-200 ease-in-out",
+                        "pt-8",
+                    )}
+                >
                     <motion.div
                         className="mt-16 space-y-6"
                         initial={{opacity: 0, y: 20}}
@@ -319,3 +339,4 @@ export default function ElegantStartPage() {
         </div>
     )
 }
+

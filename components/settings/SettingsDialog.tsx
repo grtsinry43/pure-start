@@ -44,6 +44,7 @@ const SettingsDialog = () => {
     const appearance = useAppSelector(state => state.appearance)
     const clock = useAppSelector(state => state.clock)
     const search = useAppSelector(state => state.search)
+    const background = useAppSelector(state => state.background)
 
     const dispatch = useAppDispatch();
 

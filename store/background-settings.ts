@@ -21,9 +21,40 @@ const backgroundSettingsSlice = createSlice({
         backgroundBlur: 0,
         backgroundOpacity: 100,
     },
-    reducers: {},
+    reducers: {
+        changeBackgroundType: (state, {payload}) => {
+            state.backgroundType = payload;
+        },
+        changeColorValue: (state, {payload}) => {
+            state.color.value = payload;
+        },
+        changeLinearGradient: (state, {payload}) => {
+            state.linearGradient = payload;
+        },
+        changePhotoUrl: (state, {payload}) => {
+            state.photo.url = payload;
+        },
+        changeDailyPhotoUrl: (state, {payload}) => {
+            state.dailyPhoto.url = payload;
+        },
+        changeBackgroundBlur: (state, {payload}) => {
+            state.backgroundBlur = payload;
+        },
+        changeBackgroundOpacity: (state, {payload}) => {
+            state.backgroundOpacity = payload;
+        },
+    },
 });
 
-export const {} = backgroundSettingsSlice.actions;
+export const {
+    changeBackgroundType,
+    changeColorValue,
+    changeLinearGradient,
+    changePhotoUrl,
+    changeDailyPhotoUrl,
+    changeBackgroundBlur,
+    changeBackgroundOpacity,
+} = backgroundSettingsSlice.actions;
+
 export default backgroundSettingsSlice.reducer;
 
