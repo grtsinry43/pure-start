@@ -27,7 +27,7 @@ interface BingSuggestion {
 
 declare global {
     interface Window {
-        [key: string]: (data: BaiduSuggestion) => void;
+        [key: string]: (data: BingSuggestion) => void;
     }
 }
 

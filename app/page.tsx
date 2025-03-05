@@ -1,15 +1,15 @@
 "use client"
 
-import {useState, useEffect, useCallback, useRef} from "react"
+import {useState, useEffect, useRef} from "react"
 import {motion, AnimatePresence} from "framer-motion"
 import {Search, Github, Twitter, Mail, Cloud, Coffee, Bookmark, Music} from "lucide-react"
 import {Input} from "@/components/ui/input"
 import {Tabs, TabsList, TabsTrigger} from "@/components/ui/tabs"
 import {cn} from "@/lib/utils"
 import SettingsDialog from "@/components/settings/SettingsDialog"
-import {useAppSelector} from "@/hooks/redux"
-import debounce from "lodash.debounce"
+import {useAppSelector, useAppDispatch} from "@/hooks/redux"
 import SuggestionsList from "@/components/search/SuggestionsList"
+import {WeatherIndicator} from "@/components/weather/WeatherIndicator"
 
 export default function ElegantStartPage() {
     const [time, setTime] = useState(new Date())
@@ -19,6 +19,10 @@ export default function ElegantStartPage() {
     const [activeTab, setActiveTab] = useState("all")
     const searchBar = useRef(null);
     const suggestionsRef = useRef(null);
+    const switcherRef = useRef(null);
+    const [isEngineSwitcherOpen, setIsEngineSwitcherOpen] = useState(false)
+
+    const dispatch = useAppDispatch();
 
     useEffect(() => {
         function handleClickOutside(event) {
@@ -65,17 +69,13 @@ export default function ElegantStartPage() {
                 document.documentElement.classList.remove("dark")
             }
         } else {
+            console.log(appearance.isDarkMode)
             setIsDarkMode(appearance.isDarkMode)
             document.documentElement.classList.toggle("dark", appearance.isDarkMode)
         }
     }, [appearance.isDarkMode, appearance.isDarkModeFollowSystem])
 
-    const toggleDarkMode = () => {
-        setIsDarkMode(!isDarkMode)
-        document.documentElement.classList.toggle("dark")
-    }
-
-    function getTimeGreeting(hour) {
+    function getTimeGreeting(hour: number) {
         // 核心时间问候逻辑（可扩展）
         if (hour < 5) return "凌晨好！夜深了，注意休息~"
         if (hour < 9) return "清晨好！新的一天从元气满满开始！"
@@ -191,7 +191,7 @@ export default function ElegantStartPage() {
                 {/*</motion.button>*/}
 
                 {/* Settings button */}
-                <div className="absolute top-6 right-6">
+                <div className="fixed bottom-6 right-6 z-10">
                     <SettingsDialog/>
                 </div>
 
@@ -228,14 +228,31 @@ export default function ElegantStartPage() {
                         </motion.h1>
                     )}
 
-                    <motion.p
-                        className="text-sm text-white/70"
+                    <motion.div
+                        className="flex items-center justify-center text-sm text-white/70"
                         initial={{y: 20, opacity: 0}}
                         animate={{y: 0, opacity: 1}}
                         transition={{delay: 0.3, duration: 0.6}}
                     >
-                        {time.toLocaleDateString([], {weekday: "long", year: "numeric", month: "long", day: "numeric"})}
-                    </motion.p>
+                        {
+                            clock.isClockShow && (
+                                <motion.p
+                                    className="text-sm text-white/70"
+                                    initial={{y: 20, opacity: 0}}
+                                    animate={{y: 0, opacity: 1}}
+                                    transition={{delay: 0.3, duration: 0.6}}
+                                >
+                                    {time.toLocaleDateString([], {
+                                        weekday: "long",
+                                        year: "numeric",
+                                        month: "long",
+                                        day: "numeric"
+                                    })}
+                                </motion.p>
+                            )
+                        }
+                        <WeatherIndicator/>
+                    </motion.div>
                 </div>
 
                 {/* Search bar */}
@@ -258,7 +275,7 @@ export default function ElegantStartPage() {
                             value={searchValue}
                             onChange={(e) => setSearchValue(e.target.value)}
                             placeholder="探索未知..."
-                            className="w-full pl-14 pr-4 py-6 rounded-xl bg-background/20 backdrop-blur-xl border-white/10 text-white placeholder:text-white/50 focus:border-white/30 focus:ring-1 focus:ring-white/30 transition-all duration-200"
+                            className="w-full pl-16 pr-4 py-6 rounded-xl bg-background/20 backdrop-blur-xl border-white/10 text-white placeholder:text-white/50 focus:border-white/30 focus:ring-1 focus:ring-white/30 transition-all duration-200"
                             onFocus={() => {
                                 setSearchFocused(true)
                                 // 移动设备移动到 #search-bar
@@ -267,8 +284,77 @@ export default function ElegantStartPage() {
                                 }
                             }}
                         />
-                        <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white/70 w-5 h-5"/>
+
+                        {/* Search Icon with Engine Switcher */}
+                        <div ref={switcherRef} className="absolute left-4 top-1/2 transform -translate-y-1/2">
+                            <motion.div
+                                className="relative cursor-pointer"
+                                whileHover={{scale: 1.1}}
+                                whileTap={{scale: 0.95}}
+                                onClick={() => setIsEngineSwitcherOpen(!isEngineSwitcherOpen)}
+                            >
+                                <Search className="text-white/70 w-6 h-6"/>
+
+                                {/* Small engine indicator */}
+                                <motion.div
+                                    className={cn(
+                                        "absolute -bottom-1 -right-4 w-3.5 h-3.5 rounded-full flex items-center justify-center text-[8px] font-bold text-white/20",
+                                    )}
+                                    initial={{scale: 0}}
+                                    animate={{scale: 1}}
+                                    transition={{type: "spring", stiffness: 500, damping: 15}}
+                                >
+                                    {search.defaultSearchEngine[0].toUpperCase() + search.defaultSearchEngine.substring(1)}
+                                </motion.div>
+                            </motion.div>
+                        </div>
                     </motion.form>
+                    {/* Engine Switcher Dropdown */}
+                    <AnimatePresence>
+                        {isEngineSwitcherOpen && (
+                            <motion.div
+                                initial={{opacity: 0, y: -5, scale: 0.95}}
+                                animate={{opacity: 1, y: 5, scale: 1}}
+                                exit={{opacity: 0, y: -5, scale: 0.95}}
+                                transition={{type: "spring", stiffness: 500, damping: 30}}
+                                className="absolute top-full left-0 z-50 bg-background/70 backdrop-blur-xl border border-white/10 rounded-lg shadow-lg overflow-hidden w-40"
+                            >
+                                <div className="py-1 z-50">
+                                    {search.searchEngineList.map((engine) => (
+                                        <motion.button
+                                            key={engine.name}
+                                            whileHover={{backgroundColor: "rgba(255, 255, 255, 0.1)"}}
+                                            whileTap={{scale: 0.98}}
+                                            onClick={(e) => {
+                                                e.preventDefault()
+                                                dispatch({
+                                                    type: "searchSettings/changeDefaultSearchEngine",
+                                                    payload: engine.name,
+                                                })
+                                                setIsEngineSwitcherOpen(false)
+                                            }}
+                                            className="flex items-center gap-2 w-full px-3 py-2 text-sm text-foreground/90"
+                                        >
+                                            {/*<motion.div*/}
+                                            {/*    className={cn(*/}
+                                            {/*        "w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold",*/}
+                                            {/*)}*/}
+                                            {/*>*/}
+                                            {/*    {engine.name}*/}
+                                            {/*</motion.div>*/}
+                                            <span>{engine.name}</span>
+                                            {search.defaultSearchEngine === engine.name && (
+                                                <motion.div initial={{scale: 0}} animate={{scale: 1}}
+                                                            className="ml-auto">
+                                                    <div className="w-2 h-2 rounded-full bg-white/70"/>
+                                                </motion.div>
+                                            )}
+                                        </motion.button>
+                                    ))}
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
                     {
                         searchFocused && (
                             <div ref={suggestionsRef}>
@@ -299,26 +385,27 @@ export default function ElegantStartPage() {
                                     value="all"
                                     className="text-white/70 data-[state=active]:text-white data-[state=active]:bg-white/10"
                                 >
-                                    All
+                                    全部
                                 </TabsTrigger>
                                 <TabsTrigger
                                     value="work"
                                     className="text-white/70 data-[state=active]:text-white data-[state=active]:bg-white/10"
                                 >
-                                    Work
+                                    效率
                                 </TabsTrigger>
                                 <TabsTrigger
                                     value="social"
                                     className="text-white/70 data-[state=active]:text-white data-[state=active]:bg-white/10"
                                 >
-                                    Social
+                                    社交
                                 </TabsTrigger>
                                 <TabsTrigger
                                     value="media"
                                     className="text-white/70 data-[state=active]:text-white data-[state=active]:bg-white/10"
                                 >
-                                    Media
+                                    媒体
                                 </TabsTrigger>
+                                <span className="text-sm ml-2"> 更多 &gt;&gt;</span>
                             </TabsList>
                         </Tabs>
 
