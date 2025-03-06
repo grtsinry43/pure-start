@@ -12,7 +12,7 @@ const clockSettingsSlice = createSlice({
     initialState: {
         isClockShow: true,
         clockFormat: '24h',
-        isSecondShow: true,
+        isSecondShow: false,
         isDateShow: true,
     } as ClockSettings,
     reducers: {

@@ -113,6 +113,9 @@ export default function SuggestionsList({searchValue}: SuggestionsListProps) {
     }, [searchValue]);
 
     const saveToRecent = (term: string) => {
+        if (!search.isSaveSearchHistory) {
+            return;
+        }
         try {
             const saved = localStorage.getItem("recentSearches")
             let searches = saved ? JSON.parse(saved) : []
@@ -156,6 +159,16 @@ export default function SuggestionsList({searchValue}: SuggestionsListProps) {
     }
 
     if (!searchValue.trim()) {
+        if (!search.isSaveSearchHistory) {
+            return (
+                <div className="p-3 absolute bg-background/20 w-full backdrop-blur-sm rounded-md shadow-lg mt-4">
+                    <div className="text-center py-4 text-white/60 text-sm">
+                        搜索历史记录功能已关闭
+                    </div>
+                </div>
+            )
+        }
+
         if (recentSearches.length === 0) {
             return (
                 <div className="p-3 absolute bg-background/20 w-full backdrop-blur-sm rounded-md shadow-lg mt-4">
@@ -194,6 +207,9 @@ export default function SuggestionsList({searchValue}: SuggestionsListProps) {
         )
     }
 
+    if (!search.isSuggestionsShow) {
+        return null
+    }
 
     return (
         <div className="p-3 bg-background/10 backdrop-blur-sm rounded-lg mt-4 absolute w-full z-50">

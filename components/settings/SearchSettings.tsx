@@ -24,6 +24,8 @@ const SearchSettings = () => {
                                     <Label htmlFor="show-search"
                                            className="font-medium"> 显示搜索栏 </Label>
                                     <Switch id="show-search"
+                                            disabled
+                                            aria-disabled
                                             checked={search.isSearchBarShow}
                                             onCheckedChange={(checked) => {
                                                 dispatch({

@@ -13,7 +13,7 @@ const backgroundSettingsSlice = createSlice({
             endColor: '#f0f0f0',
         },
         photo: {
-            url: '',
+            url: 'https://dogeoss.grtsinry43.com/volantis-static/media/wallpaper/minimalist/2020/006.webp',
         },
         dailyPhoto: {
             url: '',
@@ -23,6 +23,9 @@ const backgroundSettingsSlice = createSlice({
     },
     reducers: {
         changeBackgroundType: (state, {payload}) => {
+            if (payload === 'daily') {
+                state.photo.url = 'https://bing.img.run/1920x1080.php';
+            }
             state.backgroundType = payload;
         },
         changeColorValue: (state, {payload}) => {

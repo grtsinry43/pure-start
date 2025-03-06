@@ -1,6 +1,6 @@
 "use client"
 
-import {useState} from "react"
+import {useEffect, useState} from "react"
 import {
     Layout,
     Clock,
@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/dialog"
 import {ScrollArea} from "@/components/ui/scroll-area"
 import {cn} from "@/lib/utils"
-import {useAppSelector} from "@/hooks/redux";
+import {useAppDispatch, useAppSelector} from "@/hooks/redux";
 import AppearanceSettings from "@/components/settings/AppearanceSettings";
 // import LayoutSettings from "./LayoutSettings";
 import BackgroundSettings from "@/components/settings/BackgroundSettings";
@@ -40,11 +40,26 @@ const SettingsDialog = () => {
     const [activeTab, setActiveTab] = useState("appearance")
     const [isOpen, setIsOpen] = useState(false)
     const appearance = useAppSelector(state => state.appearance)
+    const dispatch = useAppDispatch();
 
     const resetSettings = () => {
         localStorage.removeItem("appState")
         window.location.reload()
     }
+
+    useEffect(() => {
+        if (isOpen) {
+            dispatch({
+                type: 'bookmarkSettings/changeIsSlideBlocked',
+                payload: true
+            })
+        } else {
+            dispatch({
+                type: 'bookmarkSettings/changeIsSlideBlocked',
+                payload: false
+            })
+        }
+    }, [dispatch, isOpen])
 
 
     const navigationItems = [
@@ -202,7 +217,7 @@ const SettingsDialog = () => {
                                         </DialogDescription>
                                     </DialogHeader>
                                     <DialogFooter>
-                                        <Button variant="outline"> 取消 </Button>
+                                        <Button variant="outline" onClick={() => setIsOpen(false)}> 取消 </Button>
                                         <Button onClick={resetSettings}> 确定 </Button>
                                     </DialogFooter>
                                 </DialogContent>

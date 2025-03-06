@@ -3,6 +3,7 @@ import {Inter} from "next/font/google"
 import {ThemeProvider} from "@/components/theme-provider"
 import React from "react";
 import StoreProvider from "@/app/store-provider";
+import {Toaster} from "sonner";
 
 const inter = Inter({subsets: ["latin"]})
 
@@ -16,6 +17,7 @@ export default function RootLayout({children}: {
                 <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
                     <StoreProvider>
                         {children}
+                        <Toaster/>
                     </StoreProvider>
                 </ThemeProvider>
             </body>

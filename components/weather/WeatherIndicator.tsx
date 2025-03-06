@@ -181,7 +181,7 @@ export function WeatherIndicator({className}: WeatherIndicatorProps) {
                         exit={{opacity: 0, y: -5}}
                         transition={{duration: 0.2}}
                     >
-                        <div className="grid grid-cols-2 gap-2 text-white/80">
+                        <div className="grid grid-cols-2 gap-2 text-foreground/80">
                             <div className="flex items-center gap-1">
                                 <Thermometer className="text-red-400" size={14}/>
                                 <span> 体感: {weatherData.now.feelsLike}°C</span>
@@ -205,7 +205,7 @@ export function WeatherIndicator({className}: WeatherIndicatorProps) {
                                 <span> 能见度: {weatherData.now.vis}km</span>
                             </div>
                         </div>
-                        <div className="flex items-center gap-1 text-white/50 text-[10px] mt-1">
+                        <div className="flex items-center gap-1 text-foreground/50 text-[10px] mt-1">
                 <span>
                     数据来源:{" "} 和风天气
                   更新于:{" "}

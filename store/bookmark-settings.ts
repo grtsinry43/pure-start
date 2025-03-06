@@ -3,6 +3,7 @@ import {createSlice} from '@reduxjs/toolkit';
 export type BookmarkSettings = {
     showBookmark: boolean;
     bookmarkShowType: 'icon' | 'text' | 'icon-text';
+    isSlideBlocked: boolean;
 };
 
 const bookmarkSettings = createSlice({
@@ -17,6 +18,9 @@ const bookmarkSettings = createSlice({
         },
         changeBookmarkShowType: (state, {payload}) => {
             state.bookmarkShowType = payload
+        },
+        changeIsSlideBlocked: (state, {payload}) => {
+            state.isSlideBlocked = payload;
         }
     },
 });
@@ -24,6 +28,7 @@ const bookmarkSettings = createSlice({
 export const {
     changeShowBookmark,
     changeBookmarkShowType,
+    changeIsSlideBlocked,
 } = bookmarkSettings.actions;
 export default bookmarkSettings.reducer;
 

@@ -23,6 +23,7 @@ const iconMap: Record<IconKey, JSX.Element> = {
 
 const BookMarkSection = ({searchFocused}: { searchFocused: boolean }) => {
     const bookmarkStore = useAppSelector((state) => state.bookmarkStore)
+    const bookmark = useAppSelector((state) => state.bookmark)
     const quickLinks = bookmarkStore.bookmarkList
     const [activeTab, setActiveTab] = React.useState("all")
     const [isExpanded, setIsExpanded] = useState(false)
@@ -36,6 +37,8 @@ const BookMarkSection = ({searchFocused}: { searchFocused: boolean }) => {
     useEffect(() => {
         const handleScroll = (e: WheelEvent) => {
             if (!sectionRef.current || searchFocused) return
+
+            if (bookmark.isSlideBlocked) return
 
             const rect = sectionRef.current.getBoundingClientRect()
             const isMouseOverSection =
@@ -61,7 +64,7 @@ const BookMarkSection = ({searchFocused}: { searchFocused: boolean }) => {
                 clearTimeout(scrollTimeout.current)
             }
         }
-    }, [isExpanded, searchFocused])
+    }, [bookmark.isSlideBlocked, isExpanded, searchFocused])
 
     const getIcon = (link: { icon: string; url: string; label: string }) => {
         if (iconMap.hasOwnProperty(link.icon)) {

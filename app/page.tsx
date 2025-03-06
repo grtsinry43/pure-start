@@ -10,6 +10,8 @@ import {useAppSelector, useAppDispatch} from "@/hooks/redux"
 import SuggestionsList from "@/components/search/SuggestionsList"
 import {WeatherIndicator} from "@/components/weather/WeatherIndicator"
 import BookMarkSection from "@/components/bookmark/BookMarkSection";
+import {toast} from "sonner";
+import AlphaDialog from "@/components/AlphaDialog";
 
 export default function ElegantStartPage() {
     const [time, setTime] = useState(new Date())
@@ -24,6 +26,22 @@ export default function ElegantStartPage() {
     const dispatch = useAppDispatch();
 
     const bookmark = useAppSelector(state => state.bookmark);
+
+    const saveToRecent = (term: string) => {
+        if (!search.isSaveSearchHistory) {
+            return;
+        }
+        try {
+            const saved = localStorage.getItem("recentSearches")
+            let searches = saved ? JSON.parse(saved) : []
+            searches = searches.filter((s: string) => s !== term)
+            searches.unshift(term)
+            searches = searches.slice(0, 5)
+            localStorage.setItem("recentSearches", JSON.stringify(searches))
+        } catch (error) {
+            console.error("Failed to save recent search:", error)
+        }
+    }
 
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
@@ -70,11 +88,14 @@ export default function ElegantStartPage() {
                 document.documentElement.classList.remove("dark")
             }
         } else {
-            console.log(appearance.isDarkMode)
+            // console.log(appearance.isDarkMode)
             setIsDarkMode(appearance.isDarkMode)
             document.documentElement.classList.toggle("dark", appearance.isDarkMode)
         }
-    }, [appearance.isDarkMode, appearance.isDarkModeFollowSystem])
+        if (appearance.primaryColor) {
+            document.documentElement.style.setProperty("--primary", appearance.primaryColor)
+        }
+    }, [appearance.isDarkMode, appearance.isDarkModeFollowSystem, appearance.primaryColor])
 
     function getTimeGreeting(hour: number) {
         // 核心时间问候逻辑（可扩展）
@@ -105,6 +126,7 @@ export default function ElegantStartPage() {
 
     const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        saveToRecent(searchValue);
         if (searchValue.trim()) {
             // 使用当前选择的搜索引擎
             const searchEngine = search.searchEngineList.find((engine) => engine.name === search.defaultSearchEngine);
@@ -132,10 +154,31 @@ export default function ElegantStartPage() {
                         searchFocused ? "from-black/40 to-black/70" : "from-black/30 to-black/60",
                     )}
                 />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                    src={background.photo.url === '' ? "https://dogeoss.grtsinry43.com/volantis-static/media/wallpaper/minimalist/2020/006.webp" : background.photo.url}
+                    src={background.photo.url}
                     alt="Background"
                     className="w-full h-full object-cover"
+                    style={{
+                        filter: `blur(${background.backgroundBlur}px)`,
+                        opacity: background.backgroundOpacity / 100,
+                    }}
+                    onError={() => {
+                        console.log("Failed to load background image")
+                        toast("图片加载失败", {
+                            description: "背景图片加载失败，点击切换到默认背景",
+                            action: {
+                                label: "切换",
+                                onClick: () => {
+                                    dispatch({
+                                        type: 'backgroundSettings/changePhotoUrl',
+                                        payload: "https://dogeoss.grtsinry43.com/volantis-static/media/wallpaper/minimalist/2020/006.webp",
+                                    })
+                                    location.reload();
+                                },
+                            },
+                        })
+                    }}
                 />
             </div>
 
@@ -178,6 +221,11 @@ export default function ElegantStartPage() {
                 {/*>*/}
                 {/*    {isDarkMode ? <Sun className="w-5 h-5"/> : <Moon className="w-5 h-5"/>}*/}
                 {/*</motion.button>*/}
+
+                {/* Alpha button */}
+                <div className="fixed bottom-20 right-6 z-10">
+                    <AlphaDialog/>
+                </div>
 
                 {/* Settings button */}
                 <div className="fixed bottom-6 right-6 z-10">
@@ -257,7 +305,9 @@ export default function ElegantStartPage() {
                             initial={{opacity: 0}}
                             animate={{opacity: searchFocused ? 1 : 0}}
                         >
-                            按下 <kbd>Enter</kbd> 或点击建议项目来搜索, 当前使用 {search.defaultSearchEngine}
+                            按下 <kbd>Enter</kbd> 或点击建议项目来搜索, 当前使用 {search.defaultSearchEngine}{
+                            !search.isSuggestionsShow && "，当前搜索建议已关闭"
+                        }
                         </motion.div>
                         <Input
                             type="text"
