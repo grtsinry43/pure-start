@@ -25,8 +25,6 @@
 
 ## 参与开发
 
-(当前除api/token之外全部开源，天气api部分涉及到隐私内容，正在考虑如何处理)
-
 ```bash
 # 克隆项目
 git clone https://github.com/grtsinry43/pure-start.git
