@@ -3,9 +3,12 @@ import {Card, CardContent} from "@/components/ui/card";
 import {Label} from "@/components/ui/label";
 import {Switch} from "@/components/ui/switch";
 import {RadioGroup, RadioGroupItem} from "@/components/ui/radio-group";
-import {Button} from "@/components/ui/button";
+import {useAppDispatch, useAppSelector} from "@/hooks/redux";
+import {BookmarkDialog} from "@/components/bookmark/BookmarkDialog";
 
 const BookmarksSettings = () => {
+    const bookmark = useAppSelector(state => state.bookmark);
+    const dispatch = useAppDispatch();
     return (
         <div className="mt-0 space-y-6">
             <div>
@@ -21,26 +24,41 @@ const BookmarksSettings = () => {
                                 <div className="flex items-center justify-between">
                                     <Label htmlFor="show-bookmarks"
                                            className="font-medium"> 显示书签 </Label>
-                                    <Switch id="show-bookmarks" defaultChecked/>
+                                    <Switch id="show-bookmarks"
+                                            checked={bookmark.showBookmark}
+                                            onCheckedChange={(value) => {
+                                                dispatch({
+                                                    type: 'bookmarkSettings/changeShowBookmark',
+                                                    payload: value
+                                                })
+                                            }}
+                                    />
                                 </div>
                             </div>
 
                             <div className="space-y-3">
                                 <Label
                                     className="font-medium"> 书签显示方式 </Label>
-                                <RadioGroup defaultValue="icons"
+                                <RadioGroup defaultValue="icon-text"
+                                            value={bookmark.bookmarkShowType}
+                                            onValueChange={(value) => {
+                                                dispatch({
+                                                    type: 'bookmarkSettings/changeBookmarkShowType',
+                                                    payload: value
+                                                })
+                                            }}
                                             className="grid gap-3">
                                     <div
                                         className="flex items-center space-x-2 rounded-md border p-3 cursor-pointer hover:bg-accent">
-                                        <RadioGroupItem value="icons" id="icons"/>
-                                        <Label htmlFor="icons"
+                                        <RadioGroupItem value="icon-text" id="icon-text"/>
+                                        <Label htmlFor="icon-text"
                                                className="flex-1 cursor-pointer"> 图标和文字 </Label>
                                     </div>
                                     <div
                                         className="flex items-center space-x-2 rounded-md border p-3 cursor-pointer hover:bg-accent">
-                                        <RadioGroupItem value="icons-only"
-                                                        id="icons-only"/>
-                                        <Label htmlFor="icons-only"
+                                        <RadioGroupItem value="icon"
+                                                        id="icon"/>
+                                        <Label htmlFor="icon"
                                                className="flex-1 cursor-pointer"> 仅图标 </Label>
                                     </div>
                                     <div
@@ -54,9 +72,10 @@ const BookmarksSettings = () => {
 
                             <div className="space-y-3">
                                 <Label className="font-medium"> 书签管理 </Label>
-                                <Button variant="outline" className="w-full">
-                                    编辑书签
-                                </Button>
+                                {/*<Button variant="outline" className="w-full">*/}
+                                {/*    编辑书签*/}
+                                {/*</Button>*/}
+                                <BookmarkDialog/>
                             </div>
                         </div>
                     </CardContent>

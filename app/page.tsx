@@ -2,32 +2,33 @@
 
 import {useState, useEffect, useRef} from "react"
 import {motion, AnimatePresence} from "framer-motion"
-import {Search, Github, Twitter, Mail, Cloud, Coffee, Bookmark, Music} from "lucide-react"
+import {Search} from "lucide-react"
 import {Input} from "@/components/ui/input"
-import {Tabs, TabsList, TabsTrigger} from "@/components/ui/tabs"
 import {cn} from "@/lib/utils"
 import SettingsDialog from "@/components/settings/SettingsDialog"
 import {useAppSelector, useAppDispatch} from "@/hooks/redux"
 import SuggestionsList from "@/components/search/SuggestionsList"
 import {WeatherIndicator} from "@/components/weather/WeatherIndicator"
+import BookMarkSection from "@/components/bookmark/BookMarkSection";
 
 export default function ElegantStartPage() {
     const [time, setTime] = useState(new Date())
     const [searchFocused, setSearchFocused] = useState(false)
     const [searchValue, setSearchValue] = useState("")
     const [isDarkMode, setIsDarkMode] = useState(false)
-    const [activeTab, setActiveTab] = useState("all")
-    const searchBar = useRef(null);
-    const suggestionsRef = useRef(null);
-    const switcherRef = useRef(null);
+    const searchBar = useRef<HTMLDivElement>(null);
+    const suggestionsRef = useRef<HTMLDivElement>(null);
+    const switcherRef = useRef<HTMLDivElement>(null);
     const [isEngineSwitcherOpen, setIsEngineSwitcherOpen] = useState(false)
 
     const dispatch = useAppDispatch();
 
+    const bookmark = useAppSelector(state => state.bookmark);
+
     useEffect(() => {
-        function handleClickOutside(event) {
+        function handleClickOutside(event: MouseEvent) {
             console.log(event)
-            if (suggestionsRef.current && !suggestionsRef.current.contains(event.target)) {
+            if (suggestionsRef.current && !suggestionsRef.current.contains(event.target as Node)) {
                 setSearchFocused(false);
             }
         }
@@ -98,35 +99,23 @@ export default function ElegantStartPage() {
     function getGreeting() {
         const hour = time.getHours();
         const base = getTimeGreeting(hour);
-        const tip = extraTips[hour] || "";
+        const tip = extraTips[hour as keyof typeof extraTips] || "";
         return [base, tip].filter(Boolean).join("\n");
     }
 
-    const handleSearch = (e) => {
-        e.preventDefault()
+    const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
         if (searchValue.trim()) {
             // 使用当前选择的搜索引擎
-            const searchEngine = search.searchEngineList.find((engine) => engine.name === search.defaultSearchEngine)
+            const searchEngine = search.searchEngineList.find((engine) => engine.name === search.defaultSearchEngine);
             if (searchEngine) {
-                window.open(`${searchEngine.url}${encodeURIComponent(searchValue)}`, "_blank")
+                window.open(`${searchEngine.url}${encodeURIComponent(searchValue)}`, "_blank");
             } else {
                 // fallback to Google search
-                window.open(`https://www.google.com/search?q=${encodeURIComponent(searchValue)}`, "_blank")
+                window.open(`https://www.google.com/search?q=${encodeURIComponent(searchValue)}`, "_blank");
             }
         }
-    }
-
-    const quickLinks = [
-        {icon: <Github className="w-4 h-4"/>, url: "https://github.com", label: "GitHub", category: "work"},
-        {icon: <Twitter className="w-4 h-4"/>, url: "https://twitter.com", label: "Twitter", category: "social"},
-        {icon: <Mail className="w-4 h-4"/>, url: "https://gmail.com", label: "Gmail", category: "work"},
-        {icon: <Bookmark className="w-4 h-4"/>, url: "https://pinterest.com", label: "Pinterest", category: "social"},
-        {icon: <Music className="w-4 h-4"/>, url: "https://spotify.com", label: "Spotify", category: "media"},
-        {icon: <Coffee className="w-4 h-4"/>, url: "https://medium.com", label: "Medium", category: "reading"},
-        {icon: <Cloud className="w-4 h-4"/>, url: "https://drive.google.com", label: "Drive", category: "work"},
-    ]
-
-    const filteredLinks = activeTab === "all" ? quickLinks : quickLinks.filter((link) => link.category === activeTab)
+    };
 
     return (
         <div
@@ -273,14 +262,14 @@ export default function ElegantStartPage() {
                         <Input
                             type="text"
                             value={searchValue}
-                            onChange={(e) => setSearchValue(e.target.value)}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchValue(e.target.value)}
                             placeholder="探索未知..."
                             className="w-full pl-16 pr-4 py-6 rounded-xl bg-background/20 backdrop-blur-xl border-white/10 text-white placeholder:text-white/50 focus:border-white/30 focus:ring-1 focus:ring-white/30 transition-all duration-200"
                             onFocus={() => {
-                                setSearchFocused(true)
+                                setSearchFocused(true);
                                 // 移动设备移动到 #search-bar
                                 if (window.innerWidth < 640) {
-                                    searchBar.current.scrollIntoView({behavior: "smooth"});
+                                    searchBar.current?.scrollIntoView({behavior: "smooth"});
                                 }
                             }}
                         />
@@ -363,85 +352,9 @@ export default function ElegantStartPage() {
                         )
                     }
                 </div>
-
-                {/* Quick links section */}
-                <div
-                    className={cn(
-                        searchFocused ? "opacity-70 blur-sm" : "opacity-100",
-                        "transition duration-200 ease-in-out",
-                        "pt-8",
-                    )}
-                >
-                    <motion.div
-                        className="mt-16 space-y-6"
-                        initial={{opacity: 0, y: 20}}
-                        animate={{opacity: 1, y: 0}}
-                        transition={{delay: 0.5, duration: 0.6}}
-                    >
-                        <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab}
-                              className="w-fit mx-auto">
-                            <TabsList className="bg-background/20 backdrop-blur-xl border border-white/10">
-                                <TabsTrigger
-                                    value="all"
-                                    className="text-white/70 data-[state=active]:text-white data-[state=active]:bg-white/10"
-                                >
-                                    全部
-                                </TabsTrigger>
-                                <TabsTrigger
-                                    value="work"
-                                    className="text-white/70 data-[state=active]:text-white data-[state=active]:bg-white/10"
-                                >
-                                    效率
-                                </TabsTrigger>
-                                <TabsTrigger
-                                    value="social"
-                                    className="text-white/70 data-[state=active]:text-white data-[state=active]:bg-white/10"
-                                >
-                                    社交
-                                </TabsTrigger>
-                                <TabsTrigger
-                                    value="media"
-                                    className="text-white/70 data-[state=active]:text-white data-[state=active]:bg-white/10"
-                                >
-                                    媒体
-                                </TabsTrigger>
-                                <span className="text-sm ml-2"> 更多 &gt;&gt;</span>
-                            </TabsList>
-                        </Tabs>
-
-                        <AnimatePresence mode="wait">
-                            <motion.div
-                                key={activeTab}
-                                initial={{opacity: 0, y: 10}}
-                                animate={{opacity: 1, y: 0}}
-                                exit={{opacity: 0, y: -10}}
-                                transition={{duration: 0.3}}
-                                className="grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-2xl mx-auto"
-                            >
-                                {filteredLinks.map((link, index) => (
-                                    <motion.a
-                                        key={index}
-                                        href={link.url}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        whileHover={{scale: 1.05, y: -5}}
-                                        whileTap={{scale: 0.95}}
-                                        initial={{opacity: 0, y: 20}}
-                                        animate={{
-                                            opacity: 1,
-                                            y: 0,
-                                            transition: {delay: index * 0.05 + 0.2},
-                                        }}
-                                        className="flex flex-col items-center space-y-2 p-4 rounded-xl bg-background/10 backdrop-blur-md border border-white/10 hover:bg-white/20 transition-colors duration-200"
-                                    >
-                                        <div className="p-3 rounded-full bg-white/10">{link.icon}</div>
-                                        <span className="text-sm text-white/80">{link.label}</span>
-                                    </motion.a>
-                                ))}
-                            </motion.div>
-                        </AnimatePresence>
-                    </motion.div>
-                </div>
+                {
+                    bookmark.showBookmark && <BookMarkSection searchFocused={searchFocused}/>
+                }
             </motion.div>
         </div>
     )

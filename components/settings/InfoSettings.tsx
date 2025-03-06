@@ -103,7 +103,7 @@ const InfoSettings = () => {
                                 className="flex items-center gap-2 text-sm hover:text-primary transition-colors"
                             >
                                 <LinkIcon className="h-4 w-4"/>
-                                <span>Grtsinry43 &#39; s Blog</span>
+                                <span>Grtsinry43&#39;s Blog</span>
                             </a>
                             <a
                                 href="https://github.com/grtsinry43"

@@ -4,6 +4,8 @@ import backgroundSettingsReducer from '@/store/background-settings';
 import layoutSettingsReducer from '@/store/layout-settings';
 import clockSettingsReducer from '@/store/clock-settings';
 import searchSettingsReducer from '@/store/search-settings';
+import bookmarkSettingsReducer from '@/store/bookmark-settings';
+import bookmarkReducer from '@/store/bookmark';
 
 const loadState = () => {
     if (typeof window === 'undefined') {
@@ -41,6 +43,8 @@ export const makeStore = () => {
             layout: layoutSettingsReducer,
             clock: clockSettingsReducer,
             search: searchSettingsReducer,
+            bookmark: bookmarkSettingsReducer,
+            bookmarkStore: bookmarkReducer,
         },
         preloadedState: loadState(),
     });

@@ -3,8 +3,6 @@
 import {useState} from "react"
 import {
     Layout,
-    Palette,
-    Grid,
     Clock,
     CloudRainWindIcon as Weather,
     Bookmark,
@@ -28,13 +26,13 @@ import {ScrollArea} from "@/components/ui/scroll-area"
 import {cn} from "@/lib/utils"
 import {useAppSelector} from "@/hooks/redux";
 import AppearanceSettings from "@/components/settings/AppearanceSettings";
-import LayoutSettings from "./LayoutSettings";
+// import LayoutSettings from "./LayoutSettings";
 import BackgroundSettings from "@/components/settings/BackgroundSettings";
 import ClockSettings from "@/components/settings/ClockSettings";
 import WeatherSettings from "@/components/settings/WeatherSettings";
 import SearchSettings from "@/components/settings/SearchSettings";
 import BookmarksSettings from "@/components/settings/BookmarksSettings";
-import ThemeSettings from "@/components/settings/ThemeSettings";
+// import ThemeSettings from "@/components/settings/ThemeSettings";
 import InfoSettings from "@/components/settings/InfoSettings";
 
 const SettingsDialog = () => {
@@ -43,16 +41,21 @@ const SettingsDialog = () => {
     const [isOpen, setIsOpen] = useState(false)
     const appearance = useAppSelector(state => state.appearance)
 
+    const resetSettings = () => {
+        localStorage.removeItem("appState")
+        window.location.reload()
+    }
+
 
     const navigationItems = [
         {icon: <Layout className="h-4 w-4"/>, label: "外观", value: "appearance"},
-        {icon: <Palette className="h-4 w-4"/>, label: "主题", value: "theme"},
-        {icon: <Grid className="h-4 w-4"/>, label: "布局", value: "layout"},
+        {icon: <Search className="h-4 w-4"/>, label: "搜索", value: "search"},
+        {icon: <Bookmark className="h-4 w-4"/>, label: "书签", value: "bookmarks"},
+        // {icon: <Palette className="h-4 w-4"/>, label: "主题", value: "theme"},
+        // {icon: <Grid className="h-4 w-4"/>, label: "布局", value: "layout"},
         {icon: <ImageIcon className="h-4 w-4"/>, label: "背景", value: "background"},
         {icon: <Clock className="h-4 w-4"/>, label: "时钟", value: "clock"},
         {icon: <Weather className="h-4 w-4"/>, label: "天气", value: "weather"},
-        {icon: <Bookmark className="h-4 w-4"/>, label: "书签", value: "bookmarks"},
-        {icon: <Search className="h-4 w-4"/>, label: "搜索", value: "search"},
         {icon: <Info className="h-4 w-4"/>, label: "关于", value: "info"},
     ]
 
@@ -140,9 +143,9 @@ const SettingsDialog = () => {
                                             <TabsContent value="appearance" className="mt-0 space-y-6">
                                                 <AppearanceSettings/>
                                             </TabsContent>
-                                            <TabsContent value="layout" className="mt-0 space-y-6">
-                                                <LayoutSettings/>
-                                            </TabsContent>
+                                            {/*<TabsContent value="layout" className="mt-0 space-y-6">*/}
+                                            {/*    <LayoutSettings/>*/}
+                                            {/*</TabsContent>*/}
                                             <TabsContent value="background" className="mt-0 space-y-6">
                                                 <BackgroundSettings/>
                                             </TabsContent>
@@ -160,9 +163,9 @@ const SettingsDialog = () => {
                                                 <BookmarksSettings/>
                                             </TabsContent>
 
-                                            <TabsContent value="theme" className="mt-0 space-y-6">
-                                                <ThemeSettings/>
-                                            </TabsContent>
+                                            {/*<TabsContent value="theme" className="mt-0 space-y-6">*/}
+                                            {/*    <ThemeSettings/>*/}
+                                            {/*</TabsContent>*/}
 
                                             <TabsContent value="info" className="mt-0 space-y-6">
                                                 <InfoSettings/>
@@ -181,8 +184,30 @@ const SettingsDialog = () => {
                             取消
                         </Button>
                         <div className="flex gap-2">
-                            <Button variant="outline"> 恢复默认 </Button>
-                            <Button type="submit"> 完成更改 </Button>
+                            <Dialog>
+                                <DialogTrigger>
+                                    <Button variant="outline"> 恢复默认 </Button>
+                                </DialogTrigger>
+                                <DialogContent>
+                                    <DialogHeader>
+                                        <DialogTitle>
+                                            恢复默认设置
+                                        </DialogTitle>
+                                        <DialogDescription>
+                                            <div className="mt-4">
+                                                这个操作无法撤销，将会清除所有自定义设置，并恢复到初始状态，您确定要继续吗？
+                                                <br/>
+                                                完成后，页面将会自动刷新
+                                            </div>
+                                        </DialogDescription>
+                                    </DialogHeader>
+                                    <DialogFooter>
+                                        <Button variant="outline"> 取消 </Button>
+                                        <Button onClick={resetSettings}> 确定 </Button>
+                                    </DialogFooter>
+                                </DialogContent>
+                            </Dialog>
+                            <Button type="submit" onClick={() => setIsOpen(false)}> 完成更改 </Button>
                         </div>
                     </div>
                 </DialogFooter>
